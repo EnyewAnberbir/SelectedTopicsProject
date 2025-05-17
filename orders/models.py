@@ -75,6 +75,7 @@ class OrderItem(models.Model):
     def __str__(self):
         return f"{self.product_name} ({self.quantity}) in Order #{self.order.order_number}"
     
+    
     def save(self, *args, **kwargs):
         # Calculate total price if not already set
         if not self.total_price:
