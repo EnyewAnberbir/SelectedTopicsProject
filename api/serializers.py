@@ -13,7 +13,11 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for the User model."""
     
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, required=False)
+    email = serializers.EmailField(required=False)
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
+    phone_number = serializers.CharField(required=False)
     
     class Meta:
         model = User
@@ -21,9 +25,26 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
     
     def create(self, validated_data):
+        # Make email and password required for user creation
+        if not validated_data.get('email'):
+            raise serializers.ValidationError({"email": "Email is required when creating a user"})
+        if not validated_data.get('password'):
+            raise serializers.ValidationError({"password": "Password is required when creating a user"})
         user = User.objects.create_user(**validated_data)
         Cart.objects.create(user=user)  # Create cart for new user
         return user
+    def update(self, instance, validated_data):
+        # Handle password update separately if provided
+        password = validated_data.pop('password', None)
+        if password:
+            instance.set_password(password)
+            
+        # Update other fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
 
 
 class AddressSerializer(serializers.ModelSerializer):
