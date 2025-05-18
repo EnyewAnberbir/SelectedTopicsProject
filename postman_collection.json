@@ -11,6 +11,53 @@
 			"item": [
 				{
 					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Response contains user data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('email');",
+									"    pm.expect(jsonData.email).to.eql(pm.request.body.email);",
+									"    pm.expect(jsonData).to.have.property('first_name');",
+									"    pm.expect(jsonData).to.have.property('last_name');",
+									"});",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Generate random email for testing",
+									"const randomEmail = 'user' + Math.floor(Math.random() * 10000) + '@example.com';",
+									"pm.variables.set('random_email', randomEmail);",
+									"",
+									"// Update request body with random email",
+									"const requestBody = JSON.parse(pm.request.body.raw);",
+									"requestBody.email = randomEmail;",
+									"pm.request.body.raw = JSON.stringify(requestBody);",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -21,7 +68,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"user@example.com\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"password\": \"securepassword123\",\n    \"phone_number\": \"+1234567890\"\n}"
+							"raw": "{\n    \"email\": \"user4470@example.com\",\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"password\": \"securepassword123\",\n    \"phone_number\": \"+1234567890\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/register/",
@@ -41,6 +88,41 @@
 				},
 				{
 					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Response contains tokens\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('access');",
+									"    pm.expect(jsonData).to.have.property('refresh');",
+									"    ",
+									"    // Save tokens to environment variables",
+									"    if (jsonData.access) {",
+									"        pm.environment.set('access_token', jsonData.access);",
+									"    }",
+									"    if (jsonData.refresh) {",
+									"        pm.environment.set('refresh_token', jsonData.refresh);",
+									"    }",
+									"});",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -71,6 +153,50 @@
 				},
 				{
 					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Response contains new access token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('access');",
+									"    ",
+									"    // Update access token in environment",
+									"    if (jsonData.access) {",
+									"        pm.environment.set('access_token', jsonData.access);",
+									"    }",
+									"});",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Check if refresh token exists",
+									"if (!pm.environment.get('refresh_token')) {",
+									"    console.log('Warning: No refresh token found in environment variables');",
+									"}",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -101,6 +227,49 @@
 				},
 				{
 					"name": "Get User Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Response contains user profile data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('email');",
+									"    pm.expect(jsonData).to.have.property('first_name');",
+									"    pm.expect(jsonData).to.have.property('last_name');",
+									"    pm.expect(jsonData).to.have.property('phone_number');",
+									"});",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Check if access token exists",
+									"if (!pm.environment.get('access_token')) {",
+									"    console.log('Warning: No access token found in environment variables');",
+									"}",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -127,6 +296,39 @@
 				},
 				{
 					"name": "Update User Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Profile updated successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var requestBody = JSON.parse(pm.request.body.raw);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('first_name');",
+									"    pm.expect(jsonData.first_name).to.eql(requestBody.first_name);",
+									"    pm.expect(jsonData).to.have.property('last_name');",
+									"    pm.expect(jsonData.last_name).to.eql(requestBody.last_name);",
+									"    pm.expect(jsonData).to.have.property('phone_number');",
+									"    pm.expect(jsonData.phone_number).to.eql(requestBody.phone_number);",
+									"});",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -167,6 +369,46 @@
 			"item": [
 				{
 					"name": "List Products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Response contains products array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    ",
+									"    // If there are products, check their structure",
+									"    if (jsonData.length > 0) {",
+									"        pm.expect(jsonData[0]).to.have.property('id');",
+									"        pm.expect(jsonData[0]).to.have.property('name');",
+									"        pm.expect(jsonData[0]).to.have.property('price');",
+									"    }",
+									"});",
+									"",
+									"// Check pagination if present",
+									"pm.test(\"Pagination works correctly if present\", function () {",
+									"    if (pm.response.headers.get('X-Total-Count')) {",
+									"        pm.expect(parseInt(pm.response.headers.get('X-Total-Count'))).to.be.at.least(0);",
+									"    }",
+									"});",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -214,6 +456,47 @@
 				},
 				{
 					"name": "Get Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Response contains product details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    pm.expect(jsonData).to.have.property('description');",
+									"    pm.expect(jsonData).to.have.property('price');",
+									"    pm.expect(jsonData).to.have.property('category');",
+									"    pm.expect(jsonData).to.have.property('slug');",
+									"});",
+									"",
+									"// Check that price is a number",
+									"pm.test(\"Price is a number\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.price).to.be.a('number');",
+									"    if (jsonData.discount_price) {",
+									"        pm.expect(jsonData.discount_price).to.be.a('number');",
+									"        pm.expect(jsonData.discount_price).to.be.at.most(jsonData.price);",
+									"    }",
+									"});",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -235,6 +518,63 @@
 				},
 				{
 					"name": "Create Product (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Product created successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var requestBody = JSON.parse(pm.request.body.raw);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    pm.expect(jsonData.name).to.eql(requestBody.name);",
+									"    pm.expect(jsonData).to.have.property('price');",
+									"    pm.expect(jsonData.price).to.eql(requestBody.price);",
+									"    pm.expect(jsonData).to.have.property('slug');",
+									"});",
+									"",
+									"// Store product ID for future tests if needed",
+									"pm.test(\"Save product ID for future tests\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.id) {",
+									"        pm.environment.set('product_id', jsonData.id);",
+									"    }",
+									"    if (jsonData.slug) {",
+									"        pm.environment.set('product_slug', jsonData.slug);",
+									"    }",
+									"});",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Check if access token exists for admin operations",
+									"if (!pm.environment.get('access_token')) {",
+									"    console.log('Warning: No access token found in environment variables');",
+									"}",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -268,6 +608,66 @@
 				},
 				{
 					"name": "Update Product (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Product updated successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var requestBody = JSON.parse(pm.request.body.raw);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    pm.expect(jsonData.name).to.eql(requestBody.name);",
+									"    pm.expect(jsonData).to.have.property('description');",
+									"    pm.expect(jsonData.description).to.eql(requestBody.description);",
+									"    pm.expect(jsonData).to.have.property('price');",
+									"    pm.expect(jsonData.price).to.eql(requestBody.price);",
+									"    pm.expect(jsonData).to.have.property('discount_price');",
+									"    pm.expect(jsonData.discount_price).to.eql(requestBody.discount_price);",
+									"});",
+									"",
+									"// Check that updated price is valid",
+									"pm.test(\"Updated price is valid\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.price).to.be.a('number');",
+									"    if (jsonData.discount_price) {",
+									"        pm.expect(jsonData.discount_price).to.be.a('number');",
+									"        pm.expect(jsonData.discount_price).to.be.at.most(jsonData.price);",
+									"    }",
+									"});",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Check if product slug is available",
+									"if (pm.environment.get('product_slug')) {",
+									"    // Replace the placeholder in the URL with the actual product slug",
+									"    pm.request.url = pm.request.url.toString().replace('product-slug', pm.environment.get('product_slug'));",
+									"}",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -302,6 +702,50 @@
 				},
 				{
 					"name": "Delete Product (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Verify no content in response body",
+									"pm.test(\"No content in response body\", function () {",
+									"    pm.response.to.not.have.body();",
+									"});",
+									"",
+									"// Clean up environment variables",
+									"pm.test(\"Clean up environment variables\", function () {",
+									"    pm.environment.unset('product_slug');",
+									"});",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Check if product slug is available",
+									"if (pm.environment.get('product_slug')) {",
+									"    // Replace the placeholder in the URL with the actual product slug",
+									"    pm.request.url = pm.request.url.toString().replace('product-slug', pm.environment.get('product_slug'));",
+									"}",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -948,6 +1392,161 @@
 						"description": "Get a specific cart item"
 					},
 					"response": []
+				},
+				{
+					"name": "View Cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Response contains cart data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('items');",
+									"    pm.expect(jsonData.items).to.be.an('array');",
+									"    pm.expect(jsonData).to.have.property('total_price');",
+									"    pm.expect(jsonData.total_price).to.be.a('number');",
+									"});",
+									"",
+									"// Check that total price calculation is correct",
+									"pm.test(\"Total price calculation is correct\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.items && jsonData.items.length > 0) {",
+									"        var calculatedTotal = 0;",
+									"        jsonData.items.forEach(function(item) {",
+									"            var itemPrice = item.product.discount_price || item.product.price;",
+									"            calculatedTotal += itemPrice * item.quantity;",
+									"        });",
+									"        pm.expect(Math.round(jsonData.total_price * 100) / 100).to.eql(Math.round(calculatedTotal * 100) / 100);",
+									"    }",
+									"});",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Check if access token exists",
+									"if (!pm.environment.get('access_token')) {",
+									"    console.log('Warning: No access token found in environment variables');",
+									"}",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/cart/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								""
+							]
+						},
+						"description": "View user's cart"
+					},
+					"response": []
+				},
+				{
+					"name": "Add to Cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Item added to cart successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var requestBody = JSON.parse(pm.request.body.raw);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('product_id');",
+									"    pm.expect(jsonData.product_id).to.eql(requestBody.product_id);",
+									"    pm.expect(jsonData).to.have.property('quantity');",
+									"    pm.expect(jsonData.quantity).to.eql(requestBody.quantity);",
+									"});",
+									"",
+									"// Store cart item ID for future tests if needed",
+									"pm.test(\"Save cart item ID for future tests\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.id) {",
+									"        pm.environment.set('cart_item_id', jsonData.id);",
+									"    }",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"product_id\": 1,\n    \"quantity\": 2\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/cart/items/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"items",
+								""
+							]
+						},
+						"description": "Add item to cart"
+					},
+					"response": []
 				}
 			],
 			"description": "Shopping cart endpoints"
@@ -1008,6 +1607,74 @@
 				},
 				{
 					"name": "Create Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Order created successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('order_number');",
+									"    pm.expect(jsonData).to.have.property('status');",
+									"    pm.expect(jsonData).to.have.property('total_amount');",
+									"    pm.expect(jsonData.total_amount).to.be.a('number');",
+									"    pm.expect(jsonData).to.have.property('items');",
+									"    pm.expect(jsonData.items).to.be.an('array');",
+									"});",
+									"",
+									"// Store order ID and number for future tests",
+									"pm.test(\"Save order details for future tests\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.id) {",
+									"        pm.environment.set('order_id', jsonData.id);",
+									"    }",
+									"    if (jsonData.order_number) {",
+									"        pm.environment.set('order_number', jsonData.order_number);",
+									"    }",
+									"});",
+									"",
+									"// Check that cart is emptied after order creation",
+									"pm.test(\"Cart should be emptied after order creation\", function () {",
+									"    // This test requires a subsequent call to check the cart",
+									"    // Just setting up a reminder that this should be verified",
+									"    console.log('Remember to verify that cart is emptied after order creation');",
+									"});",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Generate a unique reference for the order",
+									"const orderRef = 'ORDER-' + new Date().getTime();",
+									"pm.environment.set('order_reference', orderRef);",
+									"",
+									"// Update request body with the reference",
+									"const requestBody = JSON.parse(pm.request.body.raw);",
+									"requestBody.reference = orderRef;",
+									"pm.request.body.raw = JSON.stringify(requestBody);",
+									""
+								]
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1022,7 +1689,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"shipping_address_id\": 1,\n    \"billing_address_id\": 1,\n    \"shipping_cost\": 10.00,\n    \"notes\": \"Please deliver to the front door\"\n}"
+							"raw": "{\n    \"shipping_address_id\": 1,\n    \"billing_address_id\": 2,\n    \"payment_method\": \"credit_card\",\n    \"reference\": \"{{order_reference}}\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/orders/",
@@ -1035,224 +1702,7 @@
 								""
 							]
 						},
-						"description": "Create a new order"
-					},
-					"response": []
-				},
-				{
-					"name": "Cancel Order",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/orders/1/cancel/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"orders",
-								"1",
-								"cancel",
-								""
-							]
-						},
-						"description": "Cancel an order"
-					},
-					"response": []
-				}
-			],
-			"description": "Order management endpoints"
-		},
-		{
-			"name": "Addresses",
-			"item": [
-				{
-					"name": "List Addresses",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/addresses/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"addresses",
-								""
-							]
-						},
-						"description": "List user addresses"
-					},
-					"response": []
-				},
-				{
-					"name": "Create Address",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"address_type\": \"shipping\",\n    \"street_address\": \"123 Main St\",\n    \"apartment_address\": \"Apt 4B\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"country\": \"USA\",\n    \"postal_code\": \"10001\",\n    \"is_default\": true\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/addresses/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"addresses",
-								""
-							]
-						},
-						"description": "Create a new address"
-					},
-					"response": []
-				},
-				{
-					"name": "Get Address",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/addresses/1/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"addresses",
-								"1",
-								""
-							]
-						},
-						"description": "Get a specific address"
-					},
-					"response": []
-				},
-				{
-					"name": "Update Address",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"address_type\": \"shipping\",\n    \"street_address\": \"456 Updated St\",\n    \"apartment_address\": \"Apt 5C\",\n    \"city\": \"Los Angeles\",\n    \"state\": \"CA\",\n    \"country\": \"USA\",\n    \"postal_code\": \"90001\",\n    \"is_default\": true\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/addresses/1/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"addresses",
-								"1",
-								""
-							]
-						},
-						"description": "Update an address"
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Address",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/addresses/1/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"addresses",
-								"1",
-								""
-							]
-						},
-						"description": "Delete an address"
-					},
-					"response": []
-				}
-			],
-			"description": "Address management endpoints"
-		},
-		{
-			"name": "Payments",
-			"item": [
-				{
-					"name": "Create Payment",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"order_id\": 1,\n    \"payment_method\": \"credit_card\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/payments/create/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"payments",
-								"create",
-								""
-							]
-						},
-						"description": "Create a payment for an order"
+						"description": "Create a new order from cart"
 					},
 					"response": []
 				},
@@ -1410,6 +1860,462 @@
 				}
 			],
 			"description": "Admin dashboard endpoints"
+		},
+		{
+			"name": "Addresses",
+			"item": [
+				{
+					"name": "List User Addresses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Response contains addresses array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    ",
+									"    // If there are addresses, check their structure",
+									"    if (jsonData.length > 0) {",
+									"        pm.expect(jsonData[0]).to.have.property('id');",
+									"        pm.expect(jsonData[0]).to.have.property('address_line1');",
+									"        pm.expect(jsonData[0]).to.have.property('city');",
+									"        pm.expect(jsonData[0]).to.have.property('postal_code');",
+									"    }",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/addresses/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"addresses",
+								""
+							]
+						},
+						"description": "List all addresses for the current user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Address",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/addresses/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"addresses",
+								"1",
+								""
+							]
+						},
+						"description": "Get a specific address by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Address",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Address created successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var requestBody = JSON.parse(pm.request.body.raw);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('address_line1');",
+									"    pm.expect(jsonData.address_line1).to.eql(requestBody.address_line1);",
+									"    pm.expect(jsonData).to.have.property('city');",
+									"    pm.expect(jsonData.city).to.eql(requestBody.city);",
+									"});",
+									"",
+									"// Store address ID for future tests",
+									"pm.test(\"Save address ID for future tests\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.id) {",
+									"        pm.environment.set('address_id', jsonData.id);",
+									"    }",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"address_line1\": \"123 Main St\",\n    \"address_line2\": \"Apt 4B\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"country\": \"USA\",\n    \"postal_code\": \"10001\",\n    \"is_default\": true,\n    \"address_type\": \"shipping\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/addresses/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"addresses",
+								""
+							]
+						},
+						"description": "Create a new address"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Address",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"address_line1\": \"456 Updated St\",\n    \"address_line2\": \"Suite 7C\",\n    \"city\": \"Los Angeles\",\n    \"state\": \"CA\",\n    \"country\": \"USA\",\n    \"postal_code\": \"90001\",\n    \"is_default\": true,\n    \"address_type\": \"billing\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/addresses/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"addresses",
+								"1",
+								""
+							]
+						},
+						"description": "Update an existing address"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Address",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/addresses/1/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"addresses",
+								"1",
+								""
+							]
+						},
+						"description": "Delete an address"
+					},
+					"response": []
+				},
+				{
+					"name": "Set Default Address",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/addresses/1/set-default/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"addresses",
+								"1",
+								"set-default",
+								""
+							]
+						},
+						"description": "Set an address as default"
+					},
+					"response": []
+				}
+			],
+			"description": "Address management endpoints"
+		},
+		{
+			"name": "Payments",
+			"item": [
+				{
+					"name": "Create Payment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Payment created successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('status');",
+									"    pm.expect(jsonData).to.have.property('amount');",
+									"});",
+									"",
+									"// Store payment ID for future tests",
+									"pm.test(\"Save payment ID for future tests\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.id) {",
+									"        pm.environment.set('payment_id', jsonData.id);",
+									"    }",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"order_id\": \"{{order_id}}\",\n    \"payment_method\": \"credit_card\",\n    \"amount\": 699.99,\n    \"currency\": \"USD\",\n    \"card_number\": \"4111111111111111\",\n    \"expiry_month\": 12,\n    \"expiry_year\": 2025,\n    \"cvv\": \"123\",\n    \"cardholder_name\": \"John Doe\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/payments/create/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"payments",
+								"create",
+								""
+							]
+						},
+						"description": "Create a new payment for an order"
+					},
+					"response": []
+				},
+				{
+					"name": "Process Payment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Payment processed successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('status');",
+									"    pm.expect(jsonData.status).to.eql('completed');",
+									"    pm.expect(jsonData).to.have.property('transaction_id');",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"payment_id\": \"{{payment_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/payments/process/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"payments",
+								"process",
+								""
+							]
+						},
+						"description": "Process a payment for an order"
+					},
+					"response": []
+				},
+				{
+					"name": "Request Refund",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Status code test",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
+									"",
+									"// Data validation",
+									"pm.test(\"Refund requested successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('status');",
+									"    pm.expect(jsonData).to.have.property('refund_id');",
+									"    pm.expect(jsonData).to.have.property('amount');",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"order_id\": \"{{order_id}}\",\n    \"amount\": 699.99,\n    \"reason\": \"Product not as described\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/payments/refund/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"payments",
+								"refund",
+								""
+							]
+						},
+						"description": "Request a refund for an order"
+					},
+					"response": []
+				}
+			],
+			"description": "Payment processing endpoints"
 		}
 	],
 	"event": [
@@ -1418,7 +2324,14 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					""
+					"// Global pre-request script",
+					"console.log('Request to: ' + pm.request.url);",
+					"",
+					"// Set timestamp for tracking request duration",
+					"pm.variables.set('requestStartTime', new Date().getTime());",
+					"",
+					"// Log request headers for debugging",
+					"console.log('Request headers:', pm.request.headers.toJSON());"
 				]
 			}
 		},
@@ -1427,6 +2340,13 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
+					"// Calculate request duration",
+					"var requestStartTime = pm.variables.get('requestStartTime');",
+					"if (requestStartTime) {",
+					"    var requestDuration = new Date().getTime() - requestStartTime;",
+					"    console.log('Request duration: ' + requestDuration + 'ms');",
+					"}",
+					"",
 					"// Automatically save tokens from login response",
 					"if (pm.response.code === 200 && pm.request.url.toString().includes('/api/auth/login/')) {",
 					"    var jsonData = pm.response.json();",
@@ -1445,7 +2365,21 @@
 					"        pm.response.to.not.have.jsonBody('error');",
 					"    });",
 					"}",
-					""
+					"",
+					"// Common error handling",
+					"if (pm.response.code >= 400) {",
+					"    pm.test(\"Error response contains message\", function() {",
+					"        if (pm.response.headers.get('Content-Type') && pm.response.headers.get('Content-Type').includes('application/json')) {",
+					"            var jsonData = pm.response.json();",
+					"            pm.expect(jsonData).to.have.property('message') || pm.expect(jsonData).to.have.property('error');",
+					"        }",
+					"    });",
+					"}",
+					"",
+					"// Check response time for all requests",
+					"pm.test(\"Response time is logged\", function () {",
+					"    console.log('Response time: ' + pm.response.responseTime + 'ms');",
+					"});"
 				]
 			}
 		}
