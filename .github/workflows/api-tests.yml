@@ -1,0 +1,129 @@
+name: API Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  api-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ecommerce_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Install Newman
+      run: npm install -g newman
+
+    - name: Set up Django environment
+      run: |
+        export DJANGO_SETTINGS_MODULE=ecommerce.settings
+        export DATABASE_URL=postgres://postgres:postgres@localhost:5432/ecommerce_test
+        python manage.py migrate
+        python manage.py collectstatic --noinput
+
+    - name: Create test user
+      run: |
+        python -c "
+        import os
+        import django
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ecommerce.settings')
+        django.setup()
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        if not User.objects.filter(email='test@example.com').exists():
+            user = User.objects.create_user(
+                email='test@example.com',
+                password='testpass123',
+                first_name='Test',
+                last_name='User',
+                phone_number='+1234567890'
+            )
+            print(f'Created test user with ID: {user.id}')
+        else:
+            user = User.objects.get(email='test@example.com')
+            print(f'Test user already exists with ID: {user.id}')
+        "
+
+    - name: Start Django server
+      run: |
+        python manage.py runserver 8000 &
+        sleep 10
+      env:
+        DJANGO_SETTINGS_MODULE: ecommerce.settings
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/ecommerce_test
+
+    - name: Wait for server to be ready
+      run: |
+        for i in {1..30}; do
+          if curl -f http://localhost:8000/api/; then
+            echo "Server is ready!"
+            break
+          fi
+          echo "Waiting for server... attempt $i"
+          sleep 2
+        done
+
+    - name: Run API Tests
+      run: |
+        newman run postman_collection.json \
+          -e postman_environment.json \
+          --reporters cli,junit \
+          --reporter-junit-export test-results.xml
+      env:
+        CI: true
+        NEWMAN_RUN: true
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: api-test-results
+        path: test-results.xml
+
+    - name: Comment on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          if (fs.existsSync('test-results.xml')) {
+            const results = fs.readFileSync('test-results.xml', 'utf8');
+            // Parse results and create comment
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ API tests completed! Check the Actions tab for detailed results.'
+            });
+          } 
