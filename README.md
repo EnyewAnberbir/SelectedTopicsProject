@@ -91,3 +91,56 @@ python manage.py runserver ```
 ## Access the API
 Base URL: http://127.0.0.1:8000/api/
 
+## 🧪 Automated Testing with Newman
+
+This project includes automated API testing using Postman collections and Newman (Postman's command-line runner).
+
+### Running Tests Locally
+
+#### Prerequisites
+- Node.js and npm installed
+- Newman CLI (`npm install -g newman`)
+- Newman HTML reporter (`npm install -g newman-reporter-htmlextra`)
+
+#### Unix/Linux/macOS
+```bash
+# Make the script executable
+chmod +x run_tests.sh
+
+# Run the tests
+./run_tests.sh
+```
+
+#### Windows
+```cmd
+# Run the tests
+run_tests.bat
+```
+npm install -g newman
+npm install -g newman-reporter-htmlextra
+newman run postman_collection.json -e postman_environment.json -r htmlextra --reporter-htmlextra-export ./newman-report.html
+### CI/CD Integration with GitHub Actions
+
+This project includes GitHub Actions workflow that automatically runs the Postman tests on every push to the main branch and on pull requests.
+
+The workflow:
+1. Sets up the testing environment
+2. Installs dependencies
+3. Starts the Django server
+4. Runs the Postman tests with Newman
+5. Generates an HTML report
+6. Uploads the report as an artifact
+
+To view test results:
+1. Go to the GitHub Actions tab in your repository
+2. Click on the latest workflow run
+3. Download the "newman-report" artifact to view the HTML test report
+
+### Customizing Tests
+
+To modify the tests:
+1. Import the `postman_collection.json` file into Postman
+2. Make your changes to the requests and tests
+3. Export the updated collection and replace the existing file
+4. Commit and push your changes
+
