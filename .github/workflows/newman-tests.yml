@@ -2,9 +2,9 @@ name: API Tests with Newman
 
 on:
   push:
-    branches: [ main ]
+    branches: [ test,main ]
   pull_request:
-    branches: [ main ]
+    branches: [ test,main ]
   workflow_dispatch:  # Allows manual triggering
 
 jobs:
