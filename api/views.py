@@ -16,7 +16,7 @@ from .serializers import (
     ReviewSerializer, CartSerializer, CartItemSerializer, OrderSerializer,
     OrderItemSerializer, PaymentSerializer, RefundSerializer
 )
-# geting model from getusermodel
+#123
 User = get_user_model()
 
 
