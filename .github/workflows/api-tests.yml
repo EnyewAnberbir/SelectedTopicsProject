@@ -103,14 +103,6 @@ jobs:
         env:
           CI: true
           NEWMAN_RUN: true
-      - name: Debug test results
-        run: ls -l test-results.xml
-      - name: Upload test results
-        uses: actions/upload-artifact@v3
-        if: always()
-        with:
-        name: api-test-results
-        path: test-results.xml
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
