@@ -103,13 +103,6 @@ jobs:
         env:
           CI: true
           NEWMAN_RUN: true
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: api-test-results
-          path: test-results.xml
-
       - name: Comment on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v6
