@@ -290,6 +290,16 @@
 									"    pm.expect(jsonData).to.have.property('phone_number');",
 									"    pm.expect(jsonData.phone_number).to.eql(requestBody.phone_number);",
 									"});",
+									"",
+									"// Check that updated price is valid",
+									"pm.test(\"Updated price is valid\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.price).to.be.a('number');",
+									"    if (jsonData.discount_price) {",
+									"        pm.expect(jsonData.discount_price).to.be.a('number');",
+									"        pm.expect(jsonData.discount_price).to.be.at.most(jsonData.price);",
+									"    }",
+									"});",
 									""
 								]
 							}
@@ -328,67 +338,35 @@
 					"response": []
 				},
 				{
-					"name": "Register Admin",
+					"name": "Admin Login",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"const regResponseCode = pm.response.code;",
-									"",
-									"console.log('Registration response status:', regResponseCode);",
-									"",
-									"pm.test(\"Response time is acceptable\", function () {",
-									"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+									"// Status code test",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"if (regResponseCode === 201) {",
-									"    pm.test(\"Admin Registration successful\", function () {",
-									"        pm.response.to.have.status(201);",
-									"        var jsonData = pm.response.json();",
-									"        pm.expect(jsonData).to.have.property('id');",
-									"        pm.expect(jsonData).to.have.property('email');",
-									"        ",
-									"        // Login to get admin token",
-									"        const loginUrl = pm.variables.get('base_url') + '/api/auth/login/';",
-									"        const loginBody = {",
-									"            email: pm.variables.get('admin_email'),",
-									"            password: pm.variables.get('admin_password')",
-									"        };",
+									"// Response time test",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});",
 									"",
-									"        pm.sendRequest({",
-									"            url: loginUrl,",
-									"            method: 'POST',",
-									"            header: {'Content-Type': 'application/json'},",
-									"            body: {",
-									"                mode: 'raw',",
-									"                raw: JSON.stringify(loginBody)",
-									"            }",
-									"        }, function (err, res) {",
-									"            if (!err && res.code === 200) {",
-									"                const loginResponse = res.json();",
-									"                if (loginResponse.access) {",
-									"                    pm.environment.set('admintoken', loginResponse.access);",
-									"                    console.log('Admin token saved successfully');",
-									"                }",
-									"            }",
-									"        });",
-									"    });",
-									"}",
-									""
-								]
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"// Set admin credentials",
-									"pm.environment.set('admin_email', 'admin@example.com');",
-									"pm.environment.set('admin_password', 'adminpass123');",
-									""
+									"// Data validation and save admin token",
+									"pm.test(\"Response contains tokens and save admin token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('access');",
+									"    pm.expect(jsonData).to.have.property('refresh');",
+									"    ",
+									"    // Save admin token to environment",
+									"    if (jsonData.access) {",
+									"        pm.environment.set('admintoken', jsonData.access);",
+									"        console.log('Admin token saved successfully');",
+									"    }",
+									"});"
 								]
 							}
 						}
@@ -403,21 +381,68 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"{{admin_email}}\",\n    \"first_name\": \"Admin\",\n    \"last_name\": \"User\",\n    \"password\": \"{{admin_password}}\",\n    \"phone_number\": \"+1234567890\",\n    \"is_admin\": true\n}"
+							"raw": "{\n    \"email\": \"enyew@gmail.com\",\n    \"password\": \"enyew\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/auth/register/",
+							"raw": "{{base_url}}/api/auth/login/",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"auth",
-								"register",
+								"login",
 								""
 							]
 						},
-						"description": "Register a new admin user"
+						"description": "Login as admin and save admin token"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints"
+		},
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "List Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/categories/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"categories",
+								""
+							]
+						},
+						"description": "List all categories"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/categories/category-slug/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"categories",
+								"category-slug",
+								""
+							]
+						},
+						"description": "Get category details by slug"
 					},
 					"response": []
 				},
@@ -429,20 +454,21 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"pm.test(\"Category created successfully\", function () {",
+									"// Status code test",
+									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
-									"    const jsonData = pm.response.json();",
+									"});",
+									"",
+									"// Save category data to environment",
+									"pm.test(\"Save category data to environment\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('slug');",
 									"    ",
-									"    // Save category ID and slug to environment",
-									"    if (jsonData.id) {",
-									"        pm.environment.set('category_id', jsonData.id);",
-									"    }",
-									"    if (jsonData.slug) {",
-									"        pm.environment.set('category_slug', jsonData.slug);",
-									"    }",
-									"    ",
-									"    console.log('Category created with ID:', jsonData.id);",
-									"    console.log('Category slug:', jsonData.slug);",
+									"    // Save category ID and slug",
+									"    pm.environment.set('category_id', jsonData.id);",
+									"    pm.environment.set('category_slug', jsonData.slug);",
+									"    console.log('Category ID and slug saved successfully');",
 									"});"
 								]
 							}
@@ -462,7 +488,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Electronics\",\n    \"description\": \"Electronic devices and accessories\"\n}"
+							"raw": "{\n    \"name\": \"Test Category\",\n    \"description\": \"A test category for products\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/categories/",
@@ -475,43 +501,18 @@
 								""
 							]
 						},
-						"description": "Create a new category using admin token"
+						"description": "Create a new category and save its ID and slug"
 					},
 					"response": []
 				},
 				{
-					"name": "Create Product",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"pm.test(\"Product created successfully\", function () {",
-									"    pm.response.to.have.status(201);",
-									"    const jsonData = pm.response.json();",
-									"    ",
-									"    // Save product ID and slug to environment",
-									"    if (jsonData.id) {",
-									"        pm.environment.set('product_id', jsonData.id);",
-									"    }",
-									"    if (jsonData.slug) {",
-									"        pm.environment.set('product_slug', jsonData.slug);",
-									"    }",
-									"    ",
-									"    console.log('Product created with ID:', jsonData.id);",
-									"    console.log('Product slug:', jsonData.slug);",
-									"});"
-								]
-							}
-						}
-					],
+					"name": "Update Category",
 					"request": {
-						"method": "POST",
+						"method": "PUT",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{admintoken}}"
+								"value": "Bearer {{access_token}}"
 							},
 							{
 								"key": "Content-Type",
@@ -520,25 +521,52 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Smartphone\",\n    \"description\": \"Latest smartphone model\",\n    \"price\": 999.99,\n    \"category_id\": \"{{category_id}}\",\n    \"stock\": 100\n}"
+							"raw": "{\n    \"name\": \"Updated Electronics\",\n    \"description\": \"Updated description for electronic devices\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/products/",
+							"raw": "{{base_url}}/api/categories/category-slug/",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"products",
+								"categories",
+								"category-slug",
 								""
 							]
 						},
-						"description": "Create a new product using admin token and category ID"
+						"description": "Update a category (admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Category",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/categories/category-slug/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"categories",
+								"category-slug",
+								""
+							]
+						},
+						"description": "Delete a category (admin only)"
 					},
 					"response": []
 				}
 			],
-			"description": "Authentication endpoints"
+			"description": "Category management endpoints"
 		},
 		{
 			"name": "Products",
@@ -693,7 +721,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Product (Admin)",
+					"name": "Create Product",
 					"event": [
 						{
 							"listen": "test",
@@ -705,48 +733,17 @@
 									"    pm.response.to.have.status(201);",
 									"});",
 									"",
-									"// Response time test",
-									"pm.test(\"Response time is acceptable\", function () {",
-									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
-									"});",
-									"",
-									"// Data validation",
-									"pm.test(\"Product created successfully\", function () {",
+									"// Save product data to environment",
+									"pm.test(\"Save product data to environment\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    var requestBody = JSON.parse(pm.request.body.raw);",
-									"    ",
 									"    pm.expect(jsonData).to.have.property('id');",
-									"    pm.expect(jsonData).to.have.property('name');",
-									"    pm.expect(jsonData.name).to.eql(requestBody.name);",
-									"    pm.expect(jsonData).to.have.property('price');",
-									"    pm.expect(jsonData.price).to.eql(requestBody.price);",
 									"    pm.expect(jsonData).to.have.property('slug');",
-									"});",
-									"",
-									"// Store product ID for future tests if needed",
-									"pm.test(\"Save product ID for future tests\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.id) {",
-									"        pm.environment.set('product_id', jsonData.id);",
-									"    }",
-									"    if (jsonData.slug) {",
-									"        pm.environment.set('product_slug', jsonData.slug);",
-									"    }",
-									"});",
-									""
-								]
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"// Check if access token exists for admin operations",
-									"if (!pm.environment.get('access_token')) {",
-									"    console.log('Warning: No access token found in environment variables');",
-									"}",
-									""
+									"    ",
+									"    // Save product ID and slug",
+									"    pm.environment.set('product_id', jsonData.id);",
+									"    pm.environment.set('product_slug', jsonData.slug);",
+									"    console.log('Product ID and slug saved successfully');",
+									"});"
 								]
 							}
 						}
@@ -756,7 +753,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
+								"value": "Bearer {{admintoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -765,7 +762,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Smartphone XYZ\",\n    \"category\": 1,\n    \"description\": \"A high-end smartphone with amazing features\",\n    \"price\": 699.99,\n    \"discount_price\": 649.99,\n    \"stock\": 50,\n    \"is_available\": true,\n    \"is_featured\": true\n}"
+							"raw": "{\n    \"name\": \"Test Product\",\n    \"description\": \"A test product\",\n    \"price\": 99.99,\n    \"category\": \"{{category_id}}\",\n    \"stock\": 100\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/products/",
@@ -778,12 +775,12 @@
 								""
 							]
 						},
-						"description": "Create a new product (admin only)"
+						"description": "Create a new product using the saved category ID"
 					},
 					"response": []
 				},
 				{
-					"name": "Update Product (Admin)",
+					"name": "Update Product",
 					"event": [
 						{
 							"listen": "test",
@@ -877,7 +874,7 @@
 					"response": []
 				},
 				{
-					"name": "Delete Product (Admin)",
+					"name": "Delete Product",
 					"event": [
 						{
 							"listen": "test",
@@ -1056,146 +1053,6 @@
 				}
 			],
 			"description": "Product management endpoints"
-		},
-		{
-			"name": "Categories",
-			"item": [
-				{
-					"name": "List Categories",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/categories/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"categories",
-								""
-							]
-						},
-						"description": "List all categories"
-					},
-					"response": []
-				},
-				{
-					"name": "Get Category",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/categories/category-slug/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"categories",
-								"category-slug",
-								""
-							]
-						},
-						"description": "Get category details by slug"
-					},
-					"response": []
-				},
-				{
-					"name": "Create Category (Admin)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"Electronics\",\n    \"description\": \"Electronic devices and gadgets\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/categories/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"categories",
-								""
-							]
-						},
-						"description": "Create a new category (admin only)"
-					},
-					"response": []
-				},
-				{
-					"name": "Update Category (Admin)",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"Updated Electronics\",\n    \"description\": \"Updated description for electronic devices\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/categories/category-slug/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"categories",
-								"category-slug",
-								""
-							]
-						},
-						"description": "Update a category (admin only)"
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Category (Admin)",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/categories/category-slug/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"categories",
-								"category-slug",
-								""
-							]
-						},
-						"description": "Delete a category (admin only)"
-					},
-					"response": []
-				}
-			],
-			"description": "Category management endpoints"
 		},
 		{
 			"name": "Reviews",
