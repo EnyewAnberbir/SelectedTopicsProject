@@ -1,0 +1,26 @@
+{
+  "name": "ecommerce-api-tests",
+  "version": "1.0.0",
+  "description": "API tests for E-Commerce Django REST Framework backend",
+  "scripts": {
+    "test": "newman run postman_collection.json -e postman_environment.json",
+    "test:reports": "newman run postman_collection.json -e postman_environment.json -r cli,htmlextra --reporter-htmlextra-export ./reports/newman-report.html",
+    "test:smoke": "newman run postman_collection.json -e postman_environment.json --folder \"Authentication\" --folder \"Products\"",
+    "test:auth": "newman run postman_collection.json -e postman_environment.json --folder \"Authentication\"",
+    "setup": "npm install && mkdir -p reports"
+  },
+  "devDependencies": {
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.23.1"
+  },
+  "keywords": [
+    "newman",
+    "postman",
+    "api-testing",
+    "django",
+    "e-commerce"
+  ],
+  "dependencies": {
+    "ecommerce-api-tests": "file:"
+  }
+}
