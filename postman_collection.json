@@ -775,7 +775,7 @@
 								"exec": [
 									"// Check if product slug is available",
 									"if (pm.environment.get('product_slug')) {",
-									"    // Replace the placeholder in the URL with the actual product slug",
+									"    // Replace the placeholder with in the URL with the actual product slug",
 									"    pm.request.url = pm.request.url.toString().replace('product-slug', pm.environment.get('product_slug'));",
 									"}",
 									""
