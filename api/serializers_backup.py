@@ -19,12 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField(required=False)
     phone_number = serializers.CharField(required=False)
     
-    class Meta:
-        model = User
-        fields = ('id', 'email', 'first_name', 'last_name', 'phone_number', 'password')
-        extra_kwargs = {'password': {'write_only': True}}
-    
-    def create(self, validated_data):
+        class Meta:        model = User        fields = ('id', 'email', 'first_name', 'last_name', 'phone_number', 'password')        extra_kwargs = {'password': {'write_only': True}}        def validate_email(self, value):        """Validate that the email is unique during registration."""        if self.instance is None:  # Only check during creation, not update            if User.objects.filter(email=value).exists():                raise serializers.ValidationError("A user with this email address already exists.")        return value        def create(self, validated_data):
         # Make email and password required for user creation
         if not validated_data.get('email'):
             raise serializers.ValidationError({"email": "Email is required when creating a user"})
@@ -299,7 +294,7 @@ class OrderSerializer(serializers.ModelSerializer):
         except Exception as e:
             # Roll back if there's an error with order items
             order.delete()
-            raise serializers.ValidationError({"order_items": str(e)})
+            raise serializers.ValidationError({"items": str(e)})
         
         return order
 
@@ -342,4 +337,5 @@ class RefundSerializer(serializers.ModelSerializer):
             amount=validated_data.get('amount', order.total_price),
             reason=validated_data.get('reason', '')
         )
+        
         return refund 
