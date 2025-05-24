@@ -47,7 +47,7 @@ jobs:
 
       - name: Set up Django environment
         run: |
-          export DJANGO_SETTINGS_MODULE=ecommerce.settings
+          export DJANGO_SETTINGS_MODULE=ecommerce_api.settings
           export DATABASE_URL=postgres://postgres:postgres@localhost:5432/ecommerce_test
           python manage.py migrate
           python manage.py collectstatic --noinput
@@ -57,7 +57,7 @@ jobs:
           python -c "
           import os
           import django
-          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ecommerce.settings')
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ecommerce_api.settings')
           django.setup()
           from django.contrib.auth import get_user_model
           User = get_user_model()
@@ -80,7 +80,7 @@ jobs:
           python manage.py runserver 8000 &
           sleep 10
         env:
-          DJANGO_SETTINGS_MODULE: ecommerce.settings
+          DJANGO_SETTINGS_MODULE: ecommerce_api.settings
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/ecommerce_test
 
       - name: Wait for server to be ready
