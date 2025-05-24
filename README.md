@@ -144,3 +144,161 @@ To modify the tests:
 3. Export the updated collection and replace the existing file
 4. Commit and push your changes
 
++-------------------------+          +------------------------+          +-------------------------+
+|         User            |          |        Product         |          |         Order           |
++-------------------------+          +------------------------+          +-------------------------+
+| email: EmailField       |          | name: CharField        |          | order_number: CharField |
+| first_name: CharField   |          | slug: SlugField        |          | order_status: CharField |
+| last_name: CharField    |          | description: TextField |          | payment_status: CharField|
+| phone_number: CharField |          | price: DecimalField    |          | shipping_cost: DecimalField|
+| date_joined: DateTimeField|        | discount_price: DecimalField|     | total_price: DecimalField|
+| is_active: BooleanField |          | stock: PositiveIntegerField|      | payment_method: CharField|
++-------------------------+          | is_available: BooleanField |      | payment_id: CharField   |
+| full_name()             |<---------| is_featured: BooleanField |       | notes: TextField        |
++-------------------------+          +------------------------+          | tracking_number: CharField|
+         |                           | get_discount_percent() |          +-------------------------+
+         |                           | current_price()        |          | items_count()           |
+         |                           +------------------------+          +-------------------------+
+         |                                     |                                  |
+         |                                     |                                  |
+         v                                     v                                  v
++-------------------------+          +------------------------+          +-------------------------+
+|        Address          |          |      ProductImage      |          |       OrderItem         |
++-------------------------+          +------------------------+          +-------------------------+
+| address_type: CharField |          | image: ImageField      |          | product_name: CharField |
+| street_address: CharField|         | is_primary: BooleanField|         | product_price: DecimalField|
+| apartment_address: CharField|      +------------------------+          | quantity: PositiveIntegerField|
+| city: CharField         |                    |                         | total_price: DecimalField|
+| state: CharField        |                    |                         +-------------------------+
+| country: CharField      |                    |
+| postal_code: CharField  |                    |
+| is_default: BooleanField|                    |
++-------------------------+                    |
+         ^                                     |
+         |                                     |
+         |                                     v
++-------------------------+          +------------------------+          +-------------------------+
+|         Cart            |          |        Review          |          |        Payment          |
++-------------------------+          +------------------------+          +-------------------------+
+| created_at: DateTimeField|         | rating: PositiveSmallIntegerField| | payment_id: CharField   |
+| updated_at: DateTimeField|         | comment: TextField     |          | amount: DecimalField    |
++-------------------------+          | created_at: DateTimeField|        | currency: CharField     |
+| total_items()           |          | updated_at: DateTimeField|        | payment_method: CharField|
+| total_price()           |          +------------------------+          | status: CharField       |
++-------------------------+                                              +-------------------------+
+         |                                                                         |
+         |                                                                         |
+         v                                                                         v
++-------------------------+                                              +-------------------------+
+|       CartItem          |                                              |         Refund          |
++-------------------------+                                              +-------------------------+
+| quantity: PositiveIntegerField|                                        | amount: DecimalField    |
+| created_at: DateTimeField|                                             | reason: TextField       |
+| updated_at: DateTimeField|                                             | status: CharField       |
++-------------------------+                                              | refund_id: CharField    |
+| total_price()           |                                              +-------------------------+
++-------------------------+
+
+## Detailed User Flow Description
+
+### Authentication Flow
+1. **Register User**
+   - POST `/api/auth/register/` - Create a new user account
+   - Required fields: email, first_name, last_name, password
+
+2. **Login**
+   - POST `/api/auth/login/` - Authenticate and receive JWT tokens
+   - Provides access_token and refresh_token
+
+3. **Refresh Token**
+   - POST `/api/auth/token/refresh/` - Get a new access token using refresh token
+
+4. **User Profile**
+   - GET `/api/auth/profile/` - View user profile information
+   - PUT `/api/auth/profile/` - Update user profile information
+
+### Admin Flows
+1. **Category Management**
+   - POST `/api/categories/` - Create new product category
+   - PUT `/api/categories/{id}/` - Update existing category
+   - DELETE `/api/categories/{id}/` - Remove a category
+
+2. **Product Management**
+   - POST `/api/products/` - Add new product
+   - PUT `/api/products/{id}/` - Update existing product
+   - DELETE `/api/products/{id}/` - Remove a product
+
+3. **Dashboard**
+   - GET `/api/dashboard/` - View dashboard summary
+
+### User Flows
+1. **List Categories**
+   - GET `/api/categories/` - List all product categories
+
+2. **List Products**
+   - GET `/api/products/` - List all products
+
+3. **Product Search**
+   - GET `/api/products/?search=keyword` - Search for products
+
+4. **Get Category**
+   - GET `/api/categories/{id}/` - Get details of a specific category
+
+5. **Get Product**
+   - GET `/api/products/{id}/` - Get details of a specific product
+
+6. **Filter Products**
+   - GET `/api/products/?category=category_id&price=max_price` - Filter products by category and price
+
+7. **Add Review**
+   - POST `/api/reviews/` - Add a new review
+
+8. **Update/Delete Review**
+   - PUT `/api/reviews/{id}/` - Update an existing review
+   - DELETE `/api/reviews/{id}/` - Remove a review
+
+### Shopping Flow
+1. **Get/View Cart**
+   - GET `/api/carts/` - Get user's shopping cart
+
+2. **Add Item to Cart**
+   - POST `/api/carts/add/` - Add an item to the shopping cart
+
+3. **Remove Item from Cart**
+   - POST `/api/carts/remove/` - Remove an item from the shopping cart
+
+4. **Clear Cart**
+   - POST `/api/carts/clear/` - Clear the shopping cart
+
+5. **Get Product**
+   - GET `/api/products/{id}/` - Get details of a specific product
+
+### Checkout Flow
+1. **List/Create Address**
+   - GET `/api/addresses/` - List user's addresses
+   - POST `/api/addresses/` - Create a new address
+
+2. **Set Default Address**
+   - POST `/api/addresses/{id}/set_default/` - Set a specific address as default
+
+3. **Create Order**
+   - POST `/api/orders/` - Create a new order
+
+4. **List Orders**
+   - GET `/api/orders/` - List all orders
+
+5. **Get Order**
+   - GET `/api/orders/{id}/` - Get details of a specific order
+
+6. **Request Refund**
+   - POST `/api/refunds/` - Request a refund for an order
+
+7. **Create/Process Payment**
+   - POST `/api/payments/` - Create and process a payment
+
+8. **List Orders**
+   - GET `/api/orders/` - List all orders
+
+9. **Create/Process Payment**
+   - POST `/api/payments/` - Create and process a payment
+
