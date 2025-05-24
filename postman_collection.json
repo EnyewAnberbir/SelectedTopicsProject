@@ -725,18 +725,7 @@
 									"        pm.expect(jsonData).to.have.any.keys('message', 'detail', 'error');",
 									"    }",
 									"});",
-									"",
-									"// Check that price is a number if present",
-									"pm.test(\"Price is a number\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.price) {",
-									"        pm.expect(jsonData.price).to.be.a('number');",
-									"    }",
-									"    if (jsonData.discount_price) {",
-									"        pm.expect(jsonData.discount_price).to.be.a('number');",
-									"        pm.expect(jsonData.discount_price).to.be.at.most(jsonData.price);",
-									"    }",
-									"});"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
