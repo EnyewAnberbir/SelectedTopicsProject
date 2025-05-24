@@ -59,7 +59,7 @@
 					},
 					"response": []
 				},
-								{					"name": "Login",					"event": [						{							"listen": "prerequest",							"script": {								"type": "text/javascript",								"exec": [									"// Ensure we have test credentials",									"const testEmail = pm.environment.get('test_email') || 'test@example.com';",									"const testPassword = pm.environment.get('test_password') || 'testpass123';",									"",									"// Set environment variables if not already set",									"pm.environment.set('test_email', testEmail);",									"pm.environment.set('test_password', testPassword);",									"",									"console.log('Login attempt with email:', testEmail);"								]							}						},						{							"listen": "test",
+								{					"name": "Login",					"event": [						{							"listen": "prerequest",							"script": {								"type": "text/javascript",								"exec": [									"// Set admin credentials",									"pm.environment.set('admin_email', 'enyewanb0000@gmail.com');",									"pm.environment.set('admin_password', 'enyew');",									"",									"console.log('Login attempt with admin email:', pm.environment.get('admin_email'));"								]							}						},						{							"listen": "test",
 							"script": {
 								"type": "text/javascript",
 								"exec": [
@@ -82,12 +82,13 @@
 									"    // Save tokens to environment variables",
 									"    if (jsonData.access) {",
 									"        pm.environment.set('access_token', jsonData.access);",
+									"        console.log('Access token saved successfully');",
 									"    }",
 									"    if (jsonData.refresh) {",
 									"        pm.environment.set('refresh_token', jsonData.refresh);",
+									"        console.log('Refresh token saved successfully');",
 									"    }",
-									"});",
-									""
+									"});"
 								]
 							}
 						}
@@ -100,7 +101,7 @@
 								"value": "application/json"
 							}
 						],
-												"body": {							"mode": "raw",							"raw": "{\n    \"email\": \"{{test_email}}\",\n    \"password\": \"{{test_password}}\"\n}"						},
+												"body": {							"mode": "raw",							"raw": "{\n    \"email\": \"{{admin_email}}\",\n    \"password\": \"{{admin_password}}\"\n}"						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/login/",
 							"host": [
@@ -113,7 +114,7 @@
 								""
 							]
 						},
-						"description": "Login and get JWT token"
+						"description": "Login with admin credentials and get JWT token"
 					},
 					"response": []
 				},
@@ -326,72 +327,6 @@
 						"description": "Update user profile information"
 					},
 					"response": []
-				},
-				{
-					"name": "Admin Login",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"// Status code test",
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Response time test",
-									"pm.test(\"Response time is acceptable\", function () {",
-									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
-									"});",
-									"",
-									"// Data validation and token storage",
-									"pm.test(\"Response contains tokens and stores them\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('access');",
-									"    pm.expect(jsonData).to.have.property('refresh');",
-									"    ",
-									"    // Save tokens to environment variables",
-									"    if (jsonData.access) {",
-									"        pm.environment.set('access_token', jsonData.access);",
-									"        console.log('✅ Access token saved to environment');",
-									"    }",
-									"    if (jsonData.refresh) {",
-									"        pm.environment.set('refresh_token', jsonData.refresh);",
-									"        console.log('✅ Refresh token saved to environment');",
-									"    }",
-									"});"
-								]
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"email\": \"{{admin_email}}\",\n    \"password\": \"{{admin_password}}\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login",
-								""
-							]
-						},
-						"description": "Login as admin and get JWT token"
-					},
-					"response": []
 				}
 			],
 			"description": "Authentication endpoints"
@@ -435,15 +370,19 @@
 									"    if (pm.response.headers.get('X-Total-Count')) {",
 									"        pm.expect(parseInt(pm.response.headers.get('X-Total-Count'))).to.be.at.least(0);",
 									"    }",
-									"});",
-									""
+									"});"
 								]
 							}
 						}
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/products/",
 							"host": [
@@ -523,15 +462,19 @@
 									"        pm.expect(jsonData.discount_price).to.be.a('number');",
 									"        pm.expect(jsonData.discount_price).to.be.at.most(jsonData.price);",
 									"    }",
-									"});",
-									""
+									"});"
 								]
 							}
 						}
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/products/product-slug/",
 							"host": [
@@ -806,7 +749,12 @@
 					"name": "List Featured Products",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/products/?featured=true",
 							"host": [
@@ -832,7 +780,12 @@
 					"name": "Product Search",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/products/?search=keyword",
 							"host": [
@@ -858,7 +811,12 @@
 					"name": "Products by Price Range",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/products/?min_price=10&max_price=100",
 							"host": [
@@ -888,7 +846,12 @@
 					"name": "Products by Category",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/products/?category=category-slug",
 							"host": [
@@ -920,7 +883,12 @@
 					"name": "List Categories",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/categories/",
 							"host": [
@@ -940,7 +908,12 @@
 					"name": "Get Category",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/categories/category-slug/",
 							"host": [
@@ -1060,7 +1033,12 @@
 					"name": "List Product Reviews",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/products/1/reviews/",
 							"host": [
