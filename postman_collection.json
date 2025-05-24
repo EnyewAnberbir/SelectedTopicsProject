@@ -326,6 +326,216 @@
 						"description": "Update user profile information"
 					},
 					"response": []
+				},
+				{
+					"name": "Register Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const regResponseCode = pm.response.code;",
+									"",
+									"console.log('Registration response status:', regResponseCode);",
+									"",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+									"});",
+									"",
+									"if (regResponseCode === 201) {",
+									"    pm.test(\"Admin Registration successful\", function () {",
+									"        pm.response.to.have.status(201);",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.have.property('id');",
+									"        pm.expect(jsonData).to.have.property('email');",
+									"        ",
+									"        // Login to get admin token",
+									"        const loginUrl = pm.variables.get('base_url') + '/api/auth/login/';",
+									"        const loginBody = {",
+									"            email: pm.variables.get('admin_email'),",
+									"            password: pm.variables.get('admin_password')",
+									"        };",
+									"",
+									"        pm.sendRequest({",
+									"            url: loginUrl,",
+									"            method: 'POST',",
+									"            header: {'Content-Type': 'application/json'},",
+									"            body: {",
+									"                mode: 'raw',",
+									"                raw: JSON.stringify(loginBody)",
+									"            }",
+									"        }, function (err, res) {",
+									"            if (!err && res.code === 200) {",
+									"                const loginResponse = res.json();",
+									"                if (loginResponse.access) {",
+									"                    pm.environment.set('admintoken', loginResponse.access);",
+									"                    console.log('Admin token saved successfully');",
+									"                }",
+									"            }",
+									"        });",
+									"    });",
+									"}",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Set admin credentials",
+									"pm.environment.set('admin_email', 'admin@example.com');",
+									"pm.environment.set('admin_password', 'adminpass123');",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{admin_email}}\",\n    \"first_name\": \"Admin\",\n    \"last_name\": \"User\",\n    \"password\": \"{{admin_password}}\",\n    \"phone_number\": \"+1234567890\",\n    \"is_admin\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register",
+								""
+							]
+						},
+						"description": "Register a new admin user"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Category created successfully\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const jsonData = pm.response.json();",
+									"    ",
+									"    // Save category ID and slug to environment",
+									"    if (jsonData.id) {",
+									"        pm.environment.set('category_id', jsonData.id);",
+									"    }",
+									"    if (jsonData.slug) {",
+									"        pm.environment.set('category_slug', jsonData.slug);",
+									"    }",
+									"    ",
+									"    console.log('Category created with ID:', jsonData.id);",
+									"    console.log('Category slug:', jsonData.slug);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admintoken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Electronics\",\n    \"description\": \"Electronic devices and accessories\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/categories/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"categories",
+								""
+							]
+						},
+						"description": "Create a new category using admin token"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Product created successfully\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    const jsonData = pm.response.json();",
+									"    ",
+									"    // Save product ID and slug to environment",
+									"    if (jsonData.id) {",
+									"        pm.environment.set('product_id', jsonData.id);",
+									"    }",
+									"    if (jsonData.slug) {",
+									"        pm.environment.set('product_slug', jsonData.slug);",
+									"    }",
+									"    ",
+									"    console.log('Product created with ID:', jsonData.id);",
+									"    console.log('Product slug:', jsonData.slug);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admintoken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Smartphone\",\n    \"description\": \"Latest smartphone model\",\n    \"price\": 999.99,\n    \"category_id\": \"{{category_id}}\",\n    \"stock\": 100\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/products/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"products",
+								""
+							]
+						},
+						"description": "Create a new product using admin token and category ID"
+					},
+					"response": []
 				}
 			],
 			"description": "Authentication endpoints"
