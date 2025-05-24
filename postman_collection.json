@@ -59,38 +59,38 @@
 					},
 					"response": []
 				},
-								{					"name": "Login",					"event": [						{							"listen": "prerequest",							"script": {								"type": "text/javascript",								"exec": [									"// Ensure we have test credentials",									"const testEmail = pm.environment.get('test_email') || 'test@example.com';",									"const testPassword = pm.environment.get('test_password') || 'testpass123';",									"",									"// Set environment variables if not already set",									"pm.environment.set('test_email', testEmail);",									"pm.environment.set('test_password', testPassword);",									"",									"console.log('Login attempt with email:', testEmail);"								]							}						},						{							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": [
-									"// Status code test",
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Response time test",
-									"pm.test(\"Response time is acceptable\", function () {",
-									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
-									"});",
-									"",
-									"// Data validation",
-									"pm.test(\"Response contains tokens\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('access');",
-									"    pm.expect(jsonData).to.have.property('refresh');",
-									"    ",
-									"    // Save tokens to environment variables",
-									"    if (jsonData.access) {",
-									"        pm.environment.set('access_token', jsonData.access);",
-									"    }",
-									"    if (jsonData.refresh) {",
-									"        pm.environment.set('refresh_token', jsonData.refresh);",
-									"    }",
-									"});",
-									""
-								]
-							}
-						}
+								{					"name": "Login",					"event": [						{							"listen": "prerequest",							"script": {								"type": "text/javascript",								"exec": [									"// Ensure we have test credentials",									"const testEmail = pm.environment.get('test_email') || 'enyew@gmail.com';",									"const testPassword = pm.environment.get('test_password') || 'enyew';",									"",									"// Set environment variables if not already set",									"pm.environment.set('test_email', testEmail);",									"pm.environment.set('test_password', testPassword);",									"",									"console.log('Login attempt with email:', testEmail);"								]							}						},						
+								{
+									"listen": "test",
+									"script": {
+									  "type": "text/javascript",
+									  "exec": [
+										"// Status code test",
+										"pm.test(\"Status code is 200\", function () {",
+										"    pm.response.to.have.status(200);",
+										"});",
+										"",
+										"// Response time test",
+										"pm.test(\"Response time is acceptable\", function () {",
+										"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+										"});",
+										"",
+										"// Data validation and token saving",
+										"pm.test(\"Response contains tokens\", function () {",
+										"    const jsonData = pm.response.json();",
+										"    pm.expect(jsonData).to.have.property('access');",
+										"    pm.expect(jsonData).to.have.property('refresh');",
+										"",
+										"    // Save tokens to environment",
+										"    pm.environment.set('access', jsonData.access);",
+										"    pm.environment.set('refresh_token', jsonData.refresh);",
+										"",
+										"    console.log(\"Access token saved as 'access':\", jsonData.access);",
+										"});"
+									  ]
+									}
+								  }
+								  
 					],
 					"request": {
 						"method": "POST",
@@ -341,37 +341,38 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"// Status code test",
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Response time test",
-									"pm.test(\"Response time is acceptable\", function () {",
-									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
-									"});",
-									"",
-									"// Data validation",
-									"pm.test(\"Response contains products array\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.be.an('array');",
-									"    ",
-									"    // If there are products, check their structure",
-									"    if (jsonData.length > 0) {",
-									"        pm.expect(jsonData[0]).to.have.property('id');",
-									"        pm.expect(jsonData[0]).to.have.property('name');",
-									"        pm.expect(jsonData[0]).to.have.property('price');",
-									"    }",
-									"});",
-									"",
-									"// Check pagination if present",
-									"pm.test(\"Pagination works correctly if present\", function () {",
-									"    if (pm.response.headers.get('X-Total-Count')) {",
-									"        pm.expect(parseInt(pm.response.headers.get('X-Total-Count'))).to.be.at.least(0);",
-									"    }",
-									"});",
-									""
-								]
+							"// Status code test",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// Response time test",
+							"pm.test(\"Response time is acceptable\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+							"});",
+							"",
+							"// Data validation",
+							"pm.test(\"Response contains products array in 'results'\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an('object');",
+							"    pm.expect(jsonData.results).to.be.an('array');",
+							"    ",
+							"    if (jsonData.results.length > 0) {",
+							"        var firstProduct = jsonData.results[0];",
+							"        pm.expect(firstProduct).to.have.property('id');",
+							"        pm.expect(firstProduct).to.have.property('name');",
+							"        pm.expect(firstProduct).to.have.property('price');",
+							"    }",
+							"});",
+							"",
+							"// Check pagination if present",
+							"pm.test(\"Pagination works correctly if present\", function () {",
+							"    if (pm.response.headers.has('X-Total-Count')) {",
+							"        pm.expect(parseInt(pm.response.headers.get('X-Total-Count'))).to.be.at.least(0);",
+							"    }",
+							"});"
+							]
+
 							}
 						}
 					],
@@ -428,38 +429,44 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"// Status code test",
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Response time test",
-									"pm.test(\"Response time is acceptable\", function () {",
-									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
-									"});",
-									"",
-									"// Data validation",
-									"pm.test(\"Response contains product details\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('id');",
-									"    pm.expect(jsonData).to.have.property('name');",
-									"    pm.expect(jsonData).to.have.property('description');",
-									"    pm.expect(jsonData).to.have.property('price');",
-									"    pm.expect(jsonData).to.have.property('category');",
-									"    pm.expect(jsonData).to.have.property('slug');",
-									"});",
-									"",
-									"// Check that price is a number",
-									"pm.test(\"Price is a number\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.price).to.be.a('number');",
-									"    if (jsonData.discount_price) {",
-									"        pm.expect(jsonData.discount_price).to.be.a('number');",
-									"        pm.expect(jsonData.discount_price).to.be.at.most(jsonData.price);",
-									"    }",
-									"});",
-									""
-								]
+										"// Status code test",
+										"pm.test(\"Status code is 200\", function () {",
+										"    pm.response.to.have.status(200);",
+										"});",
+										"",
+										"// Response time test",
+										"pm.test(\"Response time is acceptable\", function () {",
+										"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+										"});",
+										"",
+										"// Data validation for success response",
+										"pm.test(\"Response contains product details\", function () {",
+										"    var jsonData = pm.response.json();",
+										"    if (pm.response.code === 200) {",
+										"        pm.expect(jsonData).to.have.property('id');",
+										"        pm.expect(jsonData).to.have.property('name');",
+										"        pm.expect(jsonData).to.have.property('description');",
+										"        pm.expect(jsonData).to.have.property('price');",
+										"        pm.expect(jsonData).to.have.property('category');",
+										"        pm.expect(jsonData).to.have.property('slug');",
+										"    } else {",
+										"        pm.expect(jsonData).to.have.any.keys('message', 'detail', 'error');",
+										"    }",
+										"});",
+										"",
+										"// Check that price is a number if present",
+										"pm.test(\"Price is a number\", function () {",
+										"    var jsonData = pm.response.json();",
+										"    if (jsonData.price) {",
+										"        pm.expect(jsonData.price).to.be.a('number');",
+										"    }",
+										"    if (jsonData.discount_price) {",
+										"        pm.expect(jsonData.discount_price).to.be.a('number');",
+										"        pm.expect(jsonData.discount_price).to.be.at.most(jsonData.price);",
+										"    }",
+										"});"
+										]
+
 							}
 						}
 					],
@@ -892,38 +899,58 @@
 					"response": []
 				},
 				{
-					"name": "Create Category (Admin)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"Electronics\",\n    \"description\": \"Electronic devices and gadgets\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/categories/",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"categories",
-								""
-							]
-						},
-						"description": "Create a new category (admin only)"
-					},
-					"response": []
-				},
+  "name": "Create Category (Admin)",
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Parse response and store 'id' and 'slug' in environment",
+          "let jsonData = pm.response.json();",
+          "if (jsonData && jsonData.id && jsonData.slug) {",
+          "    pm.environment.set(\"category_id\", jsonData.id);",
+          "    pm.environment.set(\"category_slug\", jsonData.slug);",
+          "    console.log(\"Category ID and Slug saved to environment.\");",
+          "} else {",
+          "    console.warn(\"Expected 'id' and 'slug' not found in response.\");",
+          "}"
+        ]
+      }
+    }
+  ],
+  "request": {
+    "method": "POST",
+    "header": [
+      {
+        "key": "Authorization",
+        "value": "Bearer {{access_token}}"
+      },
+      {
+        "key": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"name\": \"Electronics\",\n    \"description\": \"Electronic devices and gadgets\",\n    \"slug\": \"testslug\"\n}"
+    },
+    "url": {
+      "raw": "{{base_url}}/api/categories/",
+      "host": [
+        "{{base_url}}"
+      ],
+      "path": [
+        "api",
+        "categories",
+        ""
+      ]
+    },
+    "description": "Create a new category (admin only)"
+  },
+  "response": []
+},
+
 				{
 					"name": "Update Category (Admin)",
 					"request": {
@@ -1851,6 +1878,7 @@
 									"// Data validation",
 									"pm.test(\"Response contains addresses array\", function () {",
 									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
 									"    pm.expect(jsonData).to.be.an('array');",
 									"    ",
 									"    // If there are addresses, check their structure",
