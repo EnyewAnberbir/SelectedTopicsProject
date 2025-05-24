@@ -364,7 +364,11 @@
 									"    // Save admin token to environment",
 									"    if (jsonData.access) {",
 									"        pm.environment.set('admintoken', jsonData.access);",
+									"        pm.environment.set('access_token', jsonData.access); // Also save as access_token for other requests",
 									"        console.log('Admin token saved successfully');",
+									"    }",
+									"    if (jsonData.refresh) {",
+									"        pm.environment.set('refresh_token', jsonData.refresh);",
 									"    }",
 									"});"
 								]
@@ -512,7 +516,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
+								"value": "Bearer {{admintoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -524,14 +528,14 @@
 							"raw": "{\n    \"name\": \"Updated Electronics\",\n    \"description\": \"Updated description for electronic devices\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/categories/category-slug/",
+							"raw": "{{base_url}}/api/categories/{{category_slug}}/",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"categories",
-								"category-slug",
+								"{{category_slug}}",
 								""
 							]
 						},
@@ -546,18 +550,18 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
+								"value": "Bearer {{admintoken}}"
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/categories/category-slug/",
+							"raw": "{{base_url}}/api/categories/{{category_slug}}/",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"categories",
-								"category-slug",
+								"{{category_slug}}",
 								""
 							]
 						},
@@ -846,7 +850,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
+								"value": "Bearer {{admintoken}}"
 							},
 							{
 								"key": "Content-Type",
@@ -855,17 +859,17 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Smartphone XYZ Updated\",\n    \"category\": 1,\n    \"description\": \"An updated description for the smartphone\",\n    \"price\": 699.99,\n    \"discount_price\": 599.99,\n    \"stock\": 45,\n    \"is_available\": true,\n    \"is_featured\": true\n}"
+							"raw": "{\n    \"name\": \"Updated Product\",\n    \"description\": \"Updated product description\",\n    \"price\": 149.99,\n    \"category\": \"{{category_id}}\",\n    \"stock\": 75\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/products/product-slug/",
+							"raw": "{{base_url}}/api/products/{{product_slug}}/",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"products",
-								"product-slug",
+								"{{product_slug}}",
 								""
 							]
 						},
@@ -924,18 +928,18 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
+								"value": "Bearer {{admintoken}}"
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/products/product-slug/",
+							"raw": "{{base_url}}/api/products/{{product_slug}}/",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"products",
-								"product-slug",
+								"{{product_slug}}",
 								""
 							]
 						},
@@ -1820,7 +1824,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
+								"value": "Bearer {{admintoken}}"
 							}
 						],
 						"url": {
