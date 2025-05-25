@@ -48,7 +48,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AddressSerializer(serializers.ModelSerializer):
-    """Serializer for the Address model."""
+    """Serializer for the Address model  ."""
     
     class Meta:
         model = Address
