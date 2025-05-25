@@ -10,11 +10,12 @@ jobs:
   api-tests:
     runs-on: ubuntu-latest
 
+    # 🔐 Critical permissions setup
     permissions:
-      actions: read
-      contents: read
-      issues: write
-      pull-requests: write
+      actions: read    # Required to download GitHub Actions
+      contents: read   # Required to checkout code
+      issues: write    # Required for PR comments (via Issues API)
+      pull-requests: write  # Required for PR interactions
 
     services:
       postgres:
@@ -48,7 +49,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Install Newman and HTML Extra Reporter
+      - name: Install Newman and HTML reporter
         run: npm install -g newman newman-reporter-htmlextra
 
       - name: Set up Django environment
@@ -91,7 +92,7 @@ jobs:
 
       - name: Wait for server to be ready
         run: |
-          for i in {1..5}; do
+          for i in {1..30}; do
             if curl -f http://localhost:8000/api/; then
               echo "Server is ready!"
               break
@@ -106,7 +107,8 @@ jobs:
             -e postman_environment.json \
             --reporters cli,junit,htmlextra \
             --reporter-junit-export test-results.xml \
-            --reporter-htmlextra-export newman-report.html
+            --reporter-htmlextra-export newman-report.html \
+            --bail
         env:
           CI: true
           NEWMAN_RUN: true
@@ -118,11 +120,12 @@ jobs:
           path: ./newman-report.html
 
       - name: Upload test results
-        if: always()
+        if: always()  # Ensures upload even if tests fail
         uses: actions/upload-artifact@v4
         with:
           name: api-test-results
           path: test-results.xml
+
 
       - name: Comment on PR
         if: github.event_name == 'pull_request'
