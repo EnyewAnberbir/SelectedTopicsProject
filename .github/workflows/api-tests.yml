@@ -105,7 +105,7 @@ jobs:
         run: |
           newman run postman_collection.json \
             -e postman_environment.json \
-            --reporters cli,junit \
+            --reporters cli,junit,htmlextra \ 
             --reporter-junit-export test-results.xml \
             --reporter-htmlextra-export newman-report.html
         env:
@@ -123,7 +123,6 @@ jobs:
         with:
           name: api-test-results
           path: test-results.xml
-
 
       - name: Comment on PR
         if: github.event_name == 'pull_request'
