@@ -131,3 +131,6 @@ jobs:
                 body: '✅ API tests completed! Check the Actions tab for detailed results.'
               });
             }
+        # Optional: Explicitly grant token permissions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
