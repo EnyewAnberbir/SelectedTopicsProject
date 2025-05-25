@@ -9,7 +9,12 @@ on:
 jobs:
   api-tests:
     runs-on: ubuntu-latest
-
+    
+    # 🔑 Added required permissions
+    permissions:
+      actions: read  # Required to download GitHub Actions
+      contents: read  # Required to checkout code
+    
     services:
       postgres:
         image: postgres:13
@@ -103,9 +108,11 @@ jobs:
         env:
           CI: true
           NEWMAN_RUN: true
+
+      # 🔼 Updated to v4 + always() preserves results even if tests fail
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: api-test-results
           path: test-results.xml
