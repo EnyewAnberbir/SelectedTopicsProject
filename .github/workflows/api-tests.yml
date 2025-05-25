@@ -106,10 +106,16 @@ jobs:
           newman run postman_collection.json \
             -e postman_environment.json \
             --reporters cli,junit \
-            --reporter-junit-export test-results.xml
+            --reporter-junit-export test-results.xml \
+            --reporter-htmlextra-export newman-report.html
         env:
           CI: true
           NEWMAN_RUN: true
+      - name: Upload HTML Newman Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-html-report
+          path: ./newman-report.html
 
       - name: Upload test results
         if: always()  # Ensures upload even if tests fail
