@@ -10,16 +10,76 @@ jobs:
   api-tests:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ecommerce_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      - name: Install Newman
-        run: npm install -g newman newman-reporter-htmlextra
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          npm install -g newman newman-reporter-htmlextra
+
+      - name: Set up Django
+        run: |
+          export DJANGO_SETTINGS_MODULE=ecommerce_api.settings
+          export DATABASE_URL=postgres://postgres:postgres@localhost:5432/ecommerce_test
+          python manage.py migrate
+          python manage.py collectstatic --noinput
+
+      - name: Create test user
+        run: |
+          python -c "
+          import os
+          import django
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ecommerce_api.settings')
+          django.setup()
+          from django.contrib.auth import get_user_model
+          User = get_user_model()
+          if not User.objects.filter(email='test@example.com').exists():
+              user = User.objects.create_user(
+                  email='test@example.com',
+                  password='testpass123',
+                  first_name='Test',
+                  last_name='User',
+                  phone_number='+1234567890'
+              )
+              print(f'Created test user with ID: {user.id}')
+          else:
+              user = User.objects.get(email='test@example.com')
+              print(f'Test user already exists with ID: {user.id}')
+          "
+
+      - name: Start Django server
+        run: |
+          python manage.py runserver 0.0.0.0:8000 &
+          sleep 10
+        env:
+          DJANGO_SETTINGS_MODULE: ecommerce_api.settings
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/ecommerce_test
 
       - name: Run Newman Collection
         run: |
