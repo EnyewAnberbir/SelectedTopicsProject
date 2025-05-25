@@ -9,11 +9,11 @@ on:
 jobs:
   api-tests:
     runs-on: ubuntu-latest
-    
-    # 🔑 Added required permissions
-    permissions:
-      actions: read  # Required to download GitHub Actions
-      contents: read  # Required to checkout code
+    permissions:  # 🔼 Required permissions
+      actions: read
+      contents: read
+      pull-requests: write  # For commenting on PRs
+      issues: write 
     
     services:
       postgres:
@@ -116,10 +116,12 @@ jobs:
         with:
           name: api-test-results
           path: test-results.xml
-
+      
       - name: Comment on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Explicit token
         with:
           script: |
             const fs = require('fs');
@@ -128,7 +130,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                body: '✅ API tests completed! Check the Actions tab for detailed results.'
+                body: '✅ API tests completed! Check the Actions tab for results.'
               });
             }
         # Optional: Explicitly grant token permissions
