@@ -136,69 +136,6 @@ To view test results:
 2. Click on the latest workflow run
 3. Download the "newman-report" artifact to view the HTML test report
 
-### Customizing Tests
-
-To modify the tests:
-1. Import the `postman_collection.json` file into Postman
-2. Make your changes to the requests and tests
-3. Export the updated collection and replace the existing file
-4. Commit and push your changes
-
-+-------------------------+          +------------------------+          +-------------------------+
-|         User            |          |        Product         |          |         Order           |
-+-------------------------+          +------------------------+          +-------------------------+
-| email: EmailField       |          | name: CharField        |          | order_number: CharField |
-| first_name: CharField   |          | slug: SlugField        |          | order_status: CharField |
-| last_name: CharField    |          | description: TextField |          | payment_status: CharField|
-| phone_number: CharField |          | price: DecimalField    |          | shipping_cost: DecimalField|
-| date_joined: DateTimeField|        | discount_price: DecimalField|     | total_price: DecimalField|
-| is_active: BooleanField |          | stock: PositiveIntegerField|      | payment_method: CharField|
-+-------------------------+          | is_available: BooleanField |      | payment_id: CharField   |
-| full_name()             |<---------| is_featured: BooleanField |       | notes: TextField        |
-+-------------------------+          +------------------------+          | tracking_number: CharField|
-         |                           | get_discount_percent() |          +-------------------------+
-         |                           | current_price()        |          | items_count()           |
-         |                           +------------------------+          +-------------------------+
-         |                                     |                                  |
-         |                                     |                                  |
-         v                                     v                                  v
-+-------------------------+          +------------------------+          +-------------------------+
-|        Address          |          |      ProductImage      |          |       OrderItem         |
-+-------------------------+          +------------------------+          +-------------------------+
-| address_type: CharField |          | image: ImageField      |          | product_name: CharField |
-| street_address: CharField|         | is_primary: BooleanField|         | product_price: DecimalField|
-| apartment_address: CharField|      +------------------------+          | quantity: PositiveIntegerField|
-| city: CharField         |                    |                         | total_price: DecimalField|
-| state: CharField        |                    |                         +-------------------------+
-| country: CharField      |                    |
-| postal_code: CharField  |                    |
-| is_default: BooleanField|                    |
-+-------------------------+                    |
-         ^                                     |
-         |                                     |
-         |                                     v
-+-------------------------+          +------------------------+          +-------------------------+
-|         Cart            |          |        Review          |          |        Payment          |
-+-------------------------+          +------------------------+          +-------------------------+
-| created_at: DateTimeField|         | rating: PositiveSmallIntegerField| | payment_id: CharField   |
-| updated_at: DateTimeField|         | comment: TextField     |          | amount: DecimalField    |
-+-------------------------+          | created_at: DateTimeField|        | currency: CharField     |
-| total_items()           |          | updated_at: DateTimeField|        | payment_method: CharField|
-| total_price()           |          +------------------------+          | status: CharField       |
-+-------------------------+                                              +-------------------------+
-         |                                                                         |
-         |                                                                         |
-         v                                                                         v
-+-------------------------+                                              +-------------------------+
-|       CartItem          |                                              |         Refund          |
-+-------------------------+                                              +-------------------------+
-| quantity: PositiveIntegerField|                                        | amount: DecimalField    |
-| created_at: DateTimeField|                                             | reason: TextField       |
-| updated_at: DateTimeField|                                             | status: CharField       |
-+-------------------------+                                              | refund_id: CharField    |
-| total_price()           |                                              +-------------------------+
-+-------------------------+
-
 ## Detailed User Flow Description
 
 ### Authentication Flow
