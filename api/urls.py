@@ -15,7 +15,7 @@ router.register(r'addresses', views.AddressViewSet, basename='address')
 urlpatterns = [
     # Authentication endpoints
     path('auth/register/', views.RegisterView.as_view(), name='register'),
-    # path('auth/login/', views.LoginView.as_view(), name='login'),
+    path('auth/login/', views.LoginView.as_view(), name='login'),
     path('auth/refresh/', views.TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/profile/', views.UserProfileView.as_view(), name='profile'),
     
