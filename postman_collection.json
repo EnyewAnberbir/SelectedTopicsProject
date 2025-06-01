@@ -706,7 +706,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Response time test",
+									"// Response time tested",
 									"pm.test(\"Response time is acceptable\", function () {",
 									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
 									"});",
@@ -1001,7 +1001,7 @@
 							"script": {
 								"type": "text/javascript",
 								"exec": [
-									"// Response time test",
+									"// Response time tests",
 									"pm.test(\"Response time is acceptable\", function () {",
 									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
 									"});",
